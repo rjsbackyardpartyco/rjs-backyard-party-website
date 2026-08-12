@@ -940,17 +940,58 @@
       ['extraChairs','extraRound','extraRect','extraWhiteLinens','extraBlackLinens','extraCustomLinens'].forEach(id => $(id).addEventListener('input', updateSummary));
       $('packageLinenColor').addEventListener('change', updateSummary);
 
-      $('requestRentalButton').addEventListener('click', () => {
-        if (!isValid()) {
-          $('builderError').classList.add('show');
-          return;
-        }
-        $('builderError').classList.remove('show');
-        const t = totals();
-        const subject = 'Rental Request — ' + packages[selectedKey].name + ' — ' + $('builderDate').value;
-        const body = buildRequestSummary();
-        window.location.href = 'mailto:rjsbackyardpartyco@gmail.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-      });
+      $('requestRentalButton').addEventListener('click', async () => {
+  if (!isValid()) {
+    $('builderError').classList.add('show');
+    return;
+  }
+
+  $('builderError').classList.remove('show');
+
+  const button = $('requestRentalButton');
+  const originalText = button.textContent;
+  const t = totals();
+
+  button.disabled = true;
+  button.textContent = 'Sending Request...';
+
+  try {
+    const response = await fetch('/api/rental-request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: $('builderName').value.trim(),
+        phone: $('builderPhone').value.trim(),
+        email: $('builderEmail').value.trim(),
+        eventDate: $('builderDate').value,
+        location: $('builderLocation').value.trim(),
+        eventType: $('builderEventType').value,
+        fulfillment: $('builderFulfillment').value,
+        notes: $('builderNotes').value.trim(),
+        summary: buildRequestSummary(),
+        total: money(t.total)
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Unable to send request.');
+    }
+
+    button.textContent = 'REQUEST SENT!';
+    $('copyStatus').textContent = 'Rental request sent successfully. We will contact you to confirm availability.';
+    $('copyStatus').classList.add('show');
+
+  } catch (error) {
+    button.textContent = originalText;
+    button.disabled = false;
+    $('builderError').textContent = 'We could not send your request. Please try again or call/text us.';
+    $('builderError').classList.add('show');
+  }
+});
 
       $('copyRentalButton').addEventListener('click', async () => {
         const text = buildRequestSummary();
