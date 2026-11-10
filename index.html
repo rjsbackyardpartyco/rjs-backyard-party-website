@@ -526,7 +526,7 @@
         <a href="#rentals">Rentals</a>
         <a href="#packages">Packages</a>
         <a href="#how-it-works">How It Works</a>
-        <a href="#contact">Quote</a>
+        <a href="https://book.rjsbackyardpartyco.com">Quote</a>
         <a class="button" href="tel:+16620000000">Call / Text</a>
       </nav>
     </div>
@@ -543,7 +543,7 @@
           <h1>Bring the <span class="accent">Party</span> to Your Backyard</h1>
           <p>Clean, simple rental items for weddings, graduations, birthdays, showers, church events, family gatherings, and backyard celebrations.</p>
           <div class="hero-actions">
-            <a class="button" href="#contact">Get a Free Quote</a>
+            <a class="button" href="https://book.rjsbackyardpartyco.com">Get a Free Quote</a>
             <a class="button secondary" href="#rentals">View Rentals</a>
           </div>
         </div>
@@ -634,7 +634,7 @@
           </div>
         </div>
         <div style="text-align:center;margin-top:28px;">
-          <a class="button" href="#contact">Check Your Date</a>
+          <a class="button" href="https://book.rjsbackyardpartyco.com">Check Your Date</a>
         </div>
       </div>
     </section>
@@ -722,7 +722,7 @@
             <div class="summary-total"><strong>Estimated Rental Total</strong><strong id="summaryTotal">$0</strong></div>
             <p class="builder-note">Delivery or setup, if requested, may be quoted separately. Availability is not guaranteed until we confirm your date. A 20% deposit is required to book.</p>
             <div class="builder-actions">
-              <button class="button" id="requestRentalButton" type="button">Request This Rental</button>
+              <a class="button" id="requestRentalButton" href="https://book.rjsbackyardpartyco.com">Request This Rental</a>
               <button class="button secondary" id="copyRentalButton" type="button">Copy Request Summary</button>
               <div class="copy-status" id="copyStatus" aria-live="polite"></div>
               <div class="builder-error" id="builderError">Please choose a package and fill in the required event details.</div>
@@ -804,7 +804,7 @@
               <option>Other</option>
             </select>
             <textarea name="message" placeholder="What items do you need? Example: 50 chairs, 6 round tables, linens, and tent options."></textarea>
-            <button class="button" type="submit">Send Quote Request</button>
+            <a class="button" href="https://book.rjsbackyardpartyco.com">Send Quote Request</a>
           </form>
           <p class="form-note">Note: This basic form opens the visitor's email app. For a live website, connect this form through your website builder or a form service.</p>
         </div>
@@ -939,59 +939,6 @@
       }));
       ['extraChairs','extraRound','extraRect','extraWhiteLinens','extraBlackLinens','extraCustomLinens'].forEach(id => $(id).addEventListener('input', updateSummary));
       $('packageLinenColor').addEventListener('change', updateSummary);
-
-      $('requestRentalButton').addEventListener('click', async () => {
-  if (!isValid()) {
-    $('builderError').classList.add('show');
-    return;
-  }
-
-  $('builderError').classList.remove('show');
-
-  const button = $('requestRentalButton');
-  const originalText = button.textContent;
-  const t = totals();
-
-  button.disabled = true;
-  button.textContent = 'Sending Request...';
-
-  try {
-    const response = await fetch('/api/rental-request', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: $('builderName').value.trim(),
-        phone: $('builderPhone').value.trim(),
-        email: $('builderEmail').value.trim(),
-        eventDate: $('builderDate').value,
-        location: $('builderLocation').value.trim(),
-        eventType: $('builderEventType').value,
-        fulfillment: $('builderFulfillment').value,
-        notes: $('builderNotes').value.trim(),
-        summary: buildRequestSummary(),
-        total: money(t.total)
-      })
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Unable to send request.');
-    }
-
-    button.textContent = 'REQUEST SENT!';
-    $('copyStatus').textContent = 'Rental request sent successfully. We will contact you to confirm availability.';
-    $('copyStatus').classList.add('show');
-
-  } catch (error) {
-    button.textContent = originalText;
-    button.disabled = false;
-    $('builderError').textContent = 'We could not send your request. Please try again or call/text us.';
-    $('builderError').classList.add('show');
-  }
-});
 
       $('copyRentalButton').addEventListener('click', async () => {
         const text = buildRequestSummary();

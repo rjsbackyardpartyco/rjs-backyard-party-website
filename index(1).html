@@ -526,7 +526,7 @@
         <a href="#rentals">Rentals</a>
         <a href="#packages">Packages</a>
         <a href="#how-it-works">How It Works</a>
-        <a href="#contact">Quote</a>
+        <a href="https://book.rjsbackyardpartyco.com">Quote</a>
         <a class="button" href="tel:+16620000000">Call / Text</a>
       </nav>
     </div>
@@ -543,7 +543,7 @@
           <h1>Bring the <span class="accent">Party</span> to Your Backyard</h1>
           <p>Clean, simple rental items for weddings, graduations, birthdays, showers, church events, family gatherings, and backyard celebrations.</p>
           <div class="hero-actions">
-            <a class="button" href="#contact">Get a Free Quote</a>
+            <a class="button" href="https://book.rjsbackyardpartyco.com">Get a Free Quote</a>
             <a class="button secondary" href="#rentals">View Rentals</a>
           </div>
         </div>
@@ -634,7 +634,7 @@
           </div>
         </div>
         <div style="text-align:center;margin-top:28px;">
-          <a class="button" href="#contact">Check Your Date</a>
+          <a class="button" href="https://book.rjsbackyardpartyco.com">Check Your Date</a>
         </div>
       </div>
     </section>
@@ -710,7 +710,7 @@
             <div class="summary-total"><strong>Estimated Rental Total</strong><strong id="summaryTotal">$0</strong></div>
             <p class="builder-note">Delivery or setup, if requested, may be quoted separately. Availability is not guaranteed until we confirm your date. A 20% deposit is required to book.</p>
             <div class="builder-actions">
-              <button class="button" id="requestRentalButton" type="button">Request This Rental</button>
+              <a class="button" id="requestRentalButton" href="https://book.rjsbackyardpartyco.com">Request This Rental</a>
               <button class="button secondary" id="copyRentalButton" type="button">Copy Request Summary</button>
               <div class="copy-status" id="copyStatus" aria-live="polite"></div>
               <div class="builder-error" id="builderError">Please choose a package and fill in the required event details.</div>
@@ -792,7 +792,7 @@
               <option>Other</option>
             </select>
             <textarea name="message" placeholder="What items do you need? Example: 50 chairs, 6 round tables, linens, and tent options."></textarea>
-            <button class="button" type="submit">Send Quote Request</button>
+            <a class="button" href="https://book.rjsbackyardpartyco.com">Send Quote Request</a>
           </form>
           <p class="form-note">Note: This basic form opens the visitor's email app. For a live website, connect this form through your website builder or a form service.</p>
         </div>
@@ -922,18 +922,6 @@
         updateSummary();
       }));
       ['extraChairs','extraRound','extraRect','extraLinens'].forEach(id => $(id).addEventListener('input', updateSummary));
-
-      $('requestRentalButton').addEventListener('click', () => {
-        if (!isValid()) {
-          $('builderError').classList.add('show');
-          return;
-        }
-        $('builderError').classList.remove('show');
-        const t = totals();
-        const subject = 'Rental Request — ' + packages[selectedKey].name + ' — ' + $('builderDate').value;
-        const body = buildRequestSummary();
-        window.location.href = 'mailto:rjsbackyardpartyco@gmail.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-      });
 
       $('copyRentalButton').addEventListener('click', async () => {
         const text = buildRequestSummary();
