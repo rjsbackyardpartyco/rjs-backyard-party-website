@@ -645,13 +645,13 @@
         <div class="section-title">
           <div class="eyebrow">Pick It. Customize It. Request It.</div>
           <h2>Build Your Rental</h2>
-          <p>Start with a bundle, add exactly what you need, and see your estimated rental total instantly.</p>
+          <p>A package is optional. Add the items you need and see your estimated rental total instantly.</p>
         </div>
 
         <div class="rental-builder">
           <div class="builder-panel">
-            <h3 class="builder-heading">1. Choose a Package</h3>
-            <p class="builder-intro">Your package is the starting point. You can add more chairs, tables, or linens below.</p>
+            <h3 class="builder-heading">1. Choose a Package (Optional)</h3>
+            <p class="builder-intro">Pick a bundle if you want one, or skip it and request items on their own. Click a selected package again to clear it.</p>
 
             <div class="builder-package-grid" id="builderPackageGrid">
               <button class="builder-package" type="button" data-package="roundMini"><strong>Round Mini Bundle</strong><span>1 round table + 8 chairs</span><b>$35</b></button>
@@ -662,8 +662,8 @@
               <button class="builder-package" type="button" data-package="rect40Linens"><strong>Rectangle + Linens</strong><span>5 rectangle tables + 40 chairs + 5 linens</span><b>$205</b></button>
             </div>
 
-            <h3 class="builder-heading">2. Add Extras</h3>
-            <p class="builder-intro">These are added on top of the package you select.</p>
+            <h3 class="builder-heading">2. Add Extra Items</h3>
+            <p class="builder-intro">Request chairs, tables, or linens on their own, or add them on top of a package.</p>
             <div class="addon-list">
               <div class="addon-row">
                 <div><strong>Extra White Padded Chairs</strong><span class="addon-price">$4 each</span></div>
@@ -712,7 +712,7 @@
           <aside class="builder-summary" aria-live="polite">
             <div class="eyebrow">Your Rental</div>
             <h3 class="builder-heading">Estimated Order</h3>
-            <div class="summary-package" id="summaryPackage"><strong>No package selected yet</strong><span>Choose a package to get started.</span></div>
+            <div class="summary-package" id="summaryPackage"><strong>No package selected</strong><span>Optional. Choose a package or add at least one item.</span></div>
             <div class="summary-lines">
               <div class="summary-line"><span>Total chairs</span><span id="summaryChairs">0</span></div>
               <div class="summary-line"><span>Total round tables</span><span id="summaryRound">0</span></div>
@@ -725,7 +725,7 @@
               <button class="button" id="requestRentalButton" type="button">Request This Rental</button>
               <button class="button secondary" id="copyRentalButton" type="button">Copy Request Summary</button>
               <div class="copy-status" id="copyStatus" aria-live="polite"></div>
-              <div class="builder-error" id="builderError">Please choose a package and fill in the required event details.</div>
+              <div class="builder-error" id="builderError">Please choose a package or at least one item.</div>
             </div>
           </aside>
         </div>
@@ -836,8 +836,22 @@
       const qty = id => Math.max(0, parseInt($(id).value, 10) || 0);
       const money = value => '$' + value.toLocaleString('en-US', { maximumFractionDigits: 0 });
 
-      function selectPackage(key) {
+      function clearPackage() {
+        selectedKey = '';
+        document.querySelectorAll('.builder-package').forEach(btn => {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-pressed', 'false');
+        });
+        $('packageLinenColorRow').style.display = 'none';
+        updateSummary();
+      }
+
+      function selectPackage(key, options) {
         if (!packages[key]) return;
+        if (selectedKey === key && options && options.toggle) {
+          clearPackage();
+          return;
+        }
         selectedKey = key;
         document.querySelectorAll('.builder-package').forEach(btn => {
           btn.classList.toggle('active', btn.dataset.package === key);
@@ -846,6 +860,41 @@
         $('builderError').classList.remove('show');
         $('packageLinenColorRow').style.display = packages[key].linens > 0 ? 'flex' : 'none';
         updateSummary();
+      }
+
+      function addOnCount() {
+        const extras = totals().extras;
+        return extras.chairs + extras.round + extras.rect + extras.whiteLinens + extras.blackLinens + extras.customLinens;
+      }
+
+      function hasEventDetails() {
+        return !!($('builderName').value.trim() && $('builderPhone').value.trim() && $('builderDate').value && $('builderLocation').value.trim() && $('builderFulfillment').value);
+      }
+
+      function validationMessage() {
+        const missingSelection = !selectedKey && addOnCount() === 0;
+        const missingDetails = !hasEventDetails();
+        if (missingSelection && missingDetails) {
+          return 'Please choose a package or at least one item, and fill in the required event details.';
+        }
+        if (missingSelection) {
+          return 'Please choose a package or at least one item.';
+        }
+        if (missingDetails) {
+          return 'Please fill in the required event details.';
+        }
+        return '';
+      }
+
+      function refreshError() {
+        const el = $('builderError');
+        if (!el.classList.contains('show')) return;
+        const message = validationMessage();
+        if (!message) {
+          el.classList.remove('show');
+          return;
+        }
+        el.textContent = message;
       }
 
       function totals() {
@@ -868,14 +917,17 @@
         const t = totals();
         if (selectedKey) {
           $('summaryPackage').innerHTML = '<strong>' + t.base.name + ' — ' + money(t.base.price) + '</strong><span>' + t.base.description + '</span>';
+        } else if (addOnCount() > 0) {
+          $('summaryPackage').innerHTML = '<strong>Items only — no package</strong><span>Requesting individual chairs, tables, or linens.</span>';
         } else {
-          $('summaryPackage').innerHTML = '<strong>No package selected yet</strong><span>Choose a package to get started.</span>';
+          $('summaryPackage').innerHTML = '<strong>No package selected</strong><span>Optional. Choose a package or add at least one item.</span>';
         }
         $('summaryChairs').textContent = t.chairs;
         $('summaryRound').textContent = t.round;
         $('summaryRect').textContent = t.rect;
         $('summaryLinens').textContent = t.linens;
         $('summaryTotal').textContent = money(t.total);
+        refreshError();
       }
 
       function buildRequestSummary() {
@@ -897,7 +949,7 @@
           '',
           'PACKAGE',
           (p ? p.name + ' — ' + money(p.price) : 'No package selected'),
-          (p ? p.description : ''),
+          (p ? p.description : (addOnCount() > 0 ? 'Individual items only' : '')),
           '',
           'EXTRAS',
           'Extra chairs: ' + t.extras.chairs + ' × $4 = ' + money(t.extras.chairs * 4),
@@ -924,10 +976,10 @@
       }
 
       function isValid() {
-        return !!(selectedKey && $('builderName').value.trim() && $('builderPhone').value.trim() && $('builderDate').value && $('builderLocation').value.trim() && $('builderFulfillment').value);
+        return !validationMessage();
       }
 
-      document.querySelectorAll('.builder-package').forEach(btn => btn.addEventListener('click', () => selectPackage(btn.dataset.package)));
+      document.querySelectorAll('.builder-package').forEach(btn => btn.addEventListener('click', () => selectPackage(btn.dataset.package, { toggle: true })));
       document.querySelectorAll('.choose-package').forEach(link => link.addEventListener('click', () => {
         selectPackage(link.dataset.package);
         setTimeout(() => document.querySelector('#build-rental').scrollIntoView({ behavior: 'smooth', block: 'start' }), 10);
@@ -938,10 +990,16 @@
         updateSummary();
       }));
       ['extraChairs','extraRound','extraRect','extraWhiteLinens','extraBlackLinens','extraCustomLinens'].forEach(id => $(id).addEventListener('input', updateSummary));
+      ['builderName','builderPhone','builderEmail','builderDate','builderLocation','builderEventType','builderFulfillment','builderNotes'].forEach(id => {
+        $(id).addEventListener('input', refreshError);
+        $(id).addEventListener('change', refreshError);
+      });
       $('packageLinenColor').addEventListener('change', updateSummary);
 
       $('requestRentalButton').addEventListener('click', async () => {
-  if (!isValid()) {
+  const message = validationMessage();
+  if (message) {
+    $('builderError').textContent = message;
     $('builderError').classList.add('show');
     return;
   }
